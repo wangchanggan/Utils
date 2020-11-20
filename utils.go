@@ -45,6 +45,7 @@ func GetFileMd5Value(path string) (string, error) {
  * 注：
  * 1、不支持嵌套结构体，例如DeviceInfo.ExtraInfo.Dnum
  * 2、不支持类型转换
+ * 3、json和bson对应的tag必须匹配，例如`bson:"app_id,omitempty"` == `json:"app_id,omitempty"`，`bson:"app_id,omitempty"`!=`json:"app_id"`无法匹配
  * @param interface{} data 源数据结构体
  * @param interface{} result 转换后的结构体
  * @param []string src 需要固定转换的源字段，与dst一一对应
@@ -52,6 +53,10 @@ func GetFileMd5Value(path string) (string, error) {
  * @return *Error
  */
 func ConvertBetweenModelAndDto(data interface{}, result interface{}, src, dst []string) error {
+	if len(src) != len(dst) || data == nil || result == nil {
+		return errors.New("invaild params")
+	}
+
 	dataType := reflect.TypeOf(data)
 	dataValue := reflect.ValueOf(data)
 	resultType := reflect.TypeOf(result)
@@ -63,19 +68,21 @@ func ConvertBetweenModelAndDto(data interface{}, result interface{}, src, dst []
 		resultType = resultType.Elem()
 		resultValue = resultValue.Elem()
 	} else {
-		return errors.New("invalid params")
+		return errors.New("invaild params")
 	}
 
 	//todo 复杂度优化（当前n*n*n）
 	for i := 0; i < dataType.NumField(); i++ {
 		for j := 0; j < resultType.NumField(); j++ {
-			for k := 0;k < len(src); k++ {
-				//todo 类型转换
-				if dataType.Field(i).Tag.Get("bson")==resultType.Field(j).Tag.Get("json") ||
-					dataType.Field(i).Tag.Get("json")==resultType.Field(j).Tag.Get("bson") {
-					resultValue.Field(j).Set(dataValue.Field(i))
-				}else if (dataType.Field(i).Tag.Get("bson")==src[k] && resultType.Field(j).Tag.Get("json")==dst[k]) ||
-					(dataType.Field(i).Tag.Get("json")==src[k] && resultType.Field(j).Tag.Get("bson")==dst[k]) {
+			//todo 类型转换
+			if (dataType.Field(i).Tag.Get("bson")==resultType.Field(j).Tag.Get("json") && dataType.Field(i).Tag.Get("bson")!="")  ||
+				(dataType.Field(i).Tag.Get("json")==resultType.Field(j).Tag.Get("bson") && dataType.Field(i).Tag.Get("json")!="") {
+				resultValue.Field(j).Set(dataValue.Field(i))
+			}
+
+			for k ,_ := range src {
+				if (dataType.Field(i).Tag.Get("bson")==src[k] && resultType.Field(j).Tag.Get("json")==dst[k] && dataType.Field(i).Tag.Get("bson")!="" && resultType.Field(j).Tag.Get("json")!="") ||
+					(dataType.Field(i).Tag.Get("json")==src[k] && resultType.Field(j).Tag.Get("bson")==dst[k] && dataType.Field(i).Tag.Get("json")!="" && resultType.Field(j).Tag.Get("bson")!="") {
 					resultValue.Field(j).Set(dataValue.Field(i))
 				}
 			}
