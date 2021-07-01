@@ -1,4 +1,4 @@
-package Utils
+package utils
 
 import (
 	"crypto/md5"
@@ -75,14 +75,14 @@ func ConvertBetweenModelAndDto(data interface{}, result interface{}, src, dst []
 	for i := 0; i < dataType.NumField(); i++ {
 		for j := 0; j < resultType.NumField(); j++ {
 			//todo 类型转换
-			if (dataType.Field(i).Tag.Get("bson")==resultType.Field(j).Tag.Get("json") && dataType.Field(i).Tag.Get("bson")!="")  ||
-				(dataType.Field(i).Tag.Get("json")==resultType.Field(j).Tag.Get("bson") && dataType.Field(i).Tag.Get("json")!="") {
+			if (dataType.Field(i).Tag.Get("bson") == resultType.Field(j).Tag.Get("json") && dataType.Field(i).Tag.Get("bson") != "") ||
+				(dataType.Field(i).Tag.Get("json") == resultType.Field(j).Tag.Get("bson") && dataType.Field(i).Tag.Get("json") != "") {
 				resultValue.Field(j).Set(dataValue.Field(i))
 			}
 
-			for k ,_ := range src {
-				if (dataType.Field(i).Tag.Get("bson")==src[k] && resultType.Field(j).Tag.Get("json")==dst[k] && dataType.Field(i).Tag.Get("bson")!="" && resultType.Field(j).Tag.Get("json")!="") ||
-					(dataType.Field(i).Tag.Get("json")==src[k] && resultType.Field(j).Tag.Get("bson")==dst[k] && dataType.Field(i).Tag.Get("json")!="" && resultType.Field(j).Tag.Get("bson")!="") {
+			for k, _ := range src {
+				if (dataType.Field(i).Tag.Get("bson") == src[k] && resultType.Field(j).Tag.Get("json") == dst[k] && dataType.Field(i).Tag.Get("bson") != "" && resultType.Field(j).Tag.Get("json") != "") ||
+					(dataType.Field(i).Tag.Get("json") == src[k] && resultType.Field(j).Tag.Get("bson") == dst[k] && dataType.Field(i).Tag.Get("json") != "" && resultType.Field(j).Tag.Get("bson") != "") {
 					resultValue.Field(j).Set(dataValue.Field(i))
 				}
 			}
